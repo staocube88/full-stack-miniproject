@@ -1,7 +1,27 @@
-from alembic.config import Config
-from alembic import command
-import os
+from logging.config import fileConfig
+from sqlalchemy import engine_from_config, pool
+from alembic import context
+from app.db.base import Base
+from app.core.config import settings
+from typing import Any, cast
 
-def run_migrations():
-    alembic_cfg = Config("alembic.ini")  # path to your alembic.ini
-    command.upgrade(alembic_cfg, "head")
+config = context.config
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
+config.set_main_option("sqlalchemy.url", str(settings.SQLALCHEMY_DATABASE_URI))
+target_metadata = Base.metadata
+
+def run_migrations_online() -> None:
+    config_section = cast(dict[str, Any], config.get_section(config.config_ini_section) or {})
+    connectable = engine_from_config(
+        config_section,
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+    with connectable.connect() as connection:
+        context.configure(connection=connection, target_metadata=target_metadata)
+        with context.begin_transaction():
+            context.run_migrations()
+
+run_migrations_online()
