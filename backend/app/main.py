@@ -14,7 +14,7 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 if os.getenv("RUN_MIGRATIONS", "false").lower() == "true":
     from run_migrations import run_migrations
     run_migrations()
-    run_migrations_online()
+    
 if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
     sentry_sdk.init(dsn=str(settings.SENTRY_DSN), enable_tracing=True)
 
