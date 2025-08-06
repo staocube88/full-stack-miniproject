@@ -1,9 +1,7 @@
 import sentry_sdk
-import os
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
-from app.run_migrations import run_migrations_online
 
 from app.api.main import api_router
 from app.core.config import settings
@@ -11,10 +9,8 @@ from app.core.config import settings
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
-if os.getenv("RUN_MIGRATIONS", "false").lower() == "true":
-    from run_migrations import run_migrations
-    run_migrations()
-    
+
+
 if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
     sentry_sdk.init(dsn=str(settings.SENTRY_DSN), enable_tracing=True)
 
